@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2.36.0]
+### Added
+- For *legal-entity-bootstrap-task*, in case of no users/administrators is specified and identity integration enabled, provided realm will be created (if not exists) and linked to legal entity
+
+
 ## [2.35.0]
 ### Removed
 - Spring Config Server. Superseded by standardized Spring Kubernetes Configuration
