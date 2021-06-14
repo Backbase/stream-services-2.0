@@ -123,7 +123,8 @@ public class LegalEntitySaga implements StreamTaskExecutor<LegalEntityTask> {
             .flatMap(this::processJobProfiles)
             .flatMap(this::setupAdministratorPermissions)
             .flatMap(this::processProducts)
-            .flatMap(this::processSubsidiaries);
+            .flatMap(this::processSubsidiaries)
+            .flatMap(this::linkLegalEntityToRealm);
     }
 
     @Override
@@ -649,6 +650,7 @@ public class LegalEntitySaga implements StreamTaskExecutor<LegalEntityTask> {
     }
 
 
+    @ContinueSpan(log = "processSubsidiaries")
     private Mono<LegalEntityTask> processSubsidiaries(LegalEntityTask streamTask) {
 
         LegalEntity parentLegalEntity = streamTask.getData();
@@ -667,6 +669,18 @@ public class LegalEntitySaga implements StreamTaskExecutor<LegalEntityTask> {
                 // Do Something With The Children
                 return streamTask;
             });
+    }
+
+    private Mono<LegalEntityTask> linkLegalEntityToRealm(LegalEntityTask streamTask) {
+        return Mono.just(streamTask)
+            .filter(task -> legalEntitySagaConfigurationProperties.isUseIdentityIntegration())
+            .filter(task -> CollectionUtils.isEmpty(task.getData().getAdministrators())
+                && CollectionUtils.isEmpty(task.getData().getUsers()))
+            .flatMap(task ->
+                userService.setupRealm(task.getLegalEntity())
+                    .then(userService.linkLegalEntityToRealm(task.getLegalEntity()))
+                    .map(legalEntity -> streamTask)
+            );
     }
 
     private ServiceAgreement retrieveServiceAgreement(LegalEntity legalEntity) {
