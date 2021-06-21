@@ -65,12 +65,6 @@
 
         <dependency>
             <groupId>com.backbase.stream</groupId>
-            <artifactId>legal-entity-generator-core</artifactId>
-            <version>2.35.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.backbase.stream</groupId>
             <artifactId>product-core</artifactId>
             <version>2.35.0</version>
         </dependency>

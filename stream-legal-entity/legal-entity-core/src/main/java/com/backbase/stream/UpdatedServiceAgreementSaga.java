@@ -3,8 +3,7 @@ package com.backbase.stream;
 import static com.backbase.stream.worker.model.StreamTask.State.COMPLETED;
 import static com.backbase.stream.worker.model.StreamTask.State.FAILED;
 import static java.util.Collections.unmodifiableMap;
-import static org.apache.commons.lang3.ObjectUtils.isEmpty;
-import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.backbase.dbs.user.api.service.v2.model.GetUser;
 import com.backbase.stream.legalentity.model.BaseProduct;
@@ -285,7 +284,7 @@ public class UpdatedServiceAgreementSaga implements StreamTaskExecutor<UpdatedSe
             .collect(Collectors.toMap(
                 JobProfileUser::getUser,
                 jobProfileUser -> businessFunctionGroups.stream()
-                    .filter(bfg -> isNotEmpty(jobProfileUser.getReferenceJobRoleNames())
+                    .filter(bfg -> !isEmpty(jobProfileUser.getReferenceJobRoleNames())
                         && jobProfileUser.getReferenceJobRoleNames().contains(bfg.getName()))
                     .collect(Collectors.toMap(bfg -> bfg, bfg -> sa.getProductGroups()))
             ));
@@ -312,7 +311,7 @@ public class UpdatedServiceAgreementSaga implements StreamTaskExecutor<UpdatedSe
             .flatMap(List::stream)
             .map(ServiceAgreementUserAction::getUserProfile)
             .filter(Objects::nonNull)
-            .filter(jp -> isNotEmpty(jp.getReferenceJobRoleNames()))
+            .filter(jp -> !isEmpty(jp.getReferenceJobRoleNames()))
             .collect(Collectors.toList());
     }
 
