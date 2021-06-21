@@ -45,46 +45,18 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.backbase.stream</groupId>
+            <artifactId>product-catalog-model</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+
+
     </dependencies>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>com.backbase.oss</groupId>
-                <artifactId>boat-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>cursor</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <generatorName>spring</generatorName>
-                            <inputSpec>${raml2openapi-maven-plugin.input}</inputSpec>
-                            <generateApiTests>false</generateApiTests>
-                            <generateApis>false</generateApis>
-                            <generateModels>true</generateModels>
-                            <output>${openapi-generator-maven-plugin.output}</output>
-                            <configOptions>
-                                <library>spring-boot</library>
-                                <reactive>true</reactive>
-                                <java8>true</java8>
-                                <dateLibrary>java8</dateLibrary>
-                                <openapiDocketConfig>true</openapiDocketConfig>
-                                <interfaceOnly>false</interfaceOnly>
-                                <modelPackage>com.backbase.stream.productcatalog.model</modelPackage>
-                                <apiPackage>com.backbase.stream.productcatalog.api</apiPackage>
-                                <skipDefaultInterface>true</skipDefaultInterface>
-                                <performBeanValidation>true</performBeanValidation>
-                                <apis/>
-                                <models/>
-                            </configOptions>
-                        </configuration>
-                    </execution>
-
-                </executions>
-            </plugin>
 
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

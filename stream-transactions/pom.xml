@@ -17,8 +17,6 @@
         <module>transactions-core</module>
         <module>transactions-sink</module>
         <module>transactions-http</module>
-        <module>transactions-generator-core</module>
-        <module>transactions-generator-processor</module>
         <module>transactions-item-writer</module>
     </modules>
 </project>

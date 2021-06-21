@@ -15,6 +15,7 @@
 
     <modules>
         <module>legal-entity-model</module>
+        <module>product-catalog-model</module>
         <module>approval-model</module>
     </modules>
 

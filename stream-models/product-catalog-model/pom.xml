@@ -8,25 +8,23 @@
         <version>2.35.0</version>
     </parent>
 
-    <artifactId>approval-model</artifactId>
+    <artifactId>product-catalog-model</artifactId>
 
     <packaging>jar</packaging>
-    <name>Stream :: Approval Model</name>
+    <name>Stream :: Product Catalog Model</name>
 
     <properties>
         <sonar.skip>true</sonar.skip>
-        <openapi-maven-plugin.input>${project.basedir}/../../api/stream-approvals/openapi.yaml</openapi-maven-plugin.input>
-        <openapi-maven-plugin.output>${project.build.directory}/openapi.yaml</openapi-maven-plugin.output>
+        <raml2openapi-maven-plugin.input>${project.basedir}/../../api/stream-product-catalog/openapi.yaml</raml2openapi-maven-plugin.input>
+        <raml2openapi-maven-plugin.output>${project.build.directory}/openapi.yaml</raml2openapi-maven-plugin.output>
         <boat-maven-plugin.version>0.14.0</boat-maven-plugin.version>
     </properties>
 
     <dependencies>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -37,33 +35,40 @@
                 <executions>
                     <execution>
                         <id>cursor</id>
+                        <phase>generate-sources</phase>
                         <goals>
                             <goal>generate</goal>
                         </goals>
-                        <phase>generate-sources</phase>
                         <configuration>
                             <generatorName>spring</generatorName>
-                            <inputSpec>${openapi-maven-plugin.input}</inputSpec>
+                            <inputSpec>${raml2openapi-maven-plugin.input}</inputSpec>
                             <generateApiTests>false</generateApiTests>
                             <generateApis>false</generateApis>
-                            <generateSupportingFiles>false</generateSupportingFiles>
+                            <generateModels>true</generateModels>
                             <output>${openapi-generator-maven-plugin.output}</output>
                             <configOptions>
                                 <library>spring-boot</library>
                                 <reactive>true</reactive>
                                 <java8>true</java8>
                                 <dateLibrary>java8</dateLibrary>
-                                <modelPackage>com.backbase.stream.approval.model</modelPackage>
-                                <useBeanValidation>false</useBeanValidation>
-                                <useReflectionEqualsHashCode>false</useReflectionEqualsHashCode>
+                                <openapiDocketConfig>true</openapiDocketConfig>
+                                <interfaceOnly>false</interfaceOnly>
+                                <modelPackage>com.backbase.stream.productcatalog.model</modelPackage>
+                                <apiPackage>com.backbase.stream.productcatalog.api</apiPackage>
+                                <skipDefaultInterface>true</skipDefaultInterface>
+                                <performBeanValidation>true</performBeanValidation>
+                                <apis/>
+                                <models/>
                             </configOptions>
-                            <typeMappings>
-                                <typeMapping>Double=java.math.BigDecimal</typeMapping>
-                            </typeMappings>
                         </configuration>
                     </execution>
 
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
             </plugin>
 
         </plugins>

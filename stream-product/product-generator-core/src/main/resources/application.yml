@@ -1,7 +1,0 @@
-backbase:
-  stream:
-    generator:
-      product:
-        types:
-          "Current Account":
-

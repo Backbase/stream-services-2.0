@@ -15,7 +15,6 @@
 
     <modules>
         <module>product-core</module>
-        <module>product-generator-core</module>
         <module>product-ingestion-saga</module>
         <module>product-sink</module>
     </modules>
