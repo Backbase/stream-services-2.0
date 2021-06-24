@@ -16,9 +16,14 @@ import com.backbase.stream.worker.repository.impl.InMemoryReactiveUnitOfWorkRepo
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+
+import javax.validation.MessageInterpolator;
+import javax.validation.Validator;
 
 @Configuration
 @Import({
@@ -45,7 +50,6 @@ public class LegalEntitySagaConfiguration {
             userService,
             userProfileService,
             accessGroupService,
-            productIngestionSaga,
             batchProductIngestionSaga, sinkConfigurationProperties
         );
     }

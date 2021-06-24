@@ -40,22 +40,22 @@ import com.backbase.stream.service.UserService;
 import com.backbase.stream.worker.StreamTaskExecutor;
 import com.backbase.stream.worker.exception.StreamTaskException;
 import com.backbase.stream.worker.model.StreamTask;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.validation.ConstraintViolation;
 import javax.validation.Valid;
+
 import lombok.extern.slf4j.Slf4j;
 import org.mapstruct.factory.Mappers;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.sleuth.annotation.ContinueSpan;
 import org.springframework.cloud.sleuth.annotation.SpanTag;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.*;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -69,6 +69,10 @@ import reactor.util.function.Tuples;
  */
 @Slf4j
 public class LegalEntitySaga implements StreamTaskExecutor<LegalEntityTask> {
+
+    @Autowired
+    private Validator validator;
+
 
     public static final String LEGAL_ENTITY = "LEGAL_ENTITY";
     public static final String IDENTITY_USER = "IDENTITY_USER";
@@ -103,8 +107,8 @@ public class LegalEntitySaga implements StreamTaskExecutor<LegalEntityTask> {
                            UserService userService,
                            UserProfileService userProfileService,
                            AccessGroupService accessGroupService,
-                           ProductIngestionSaga productIngestionSaga,
-                           BatchProductIngestionSaga batchProductIngestionSaga, LegalEntitySagaConfigurationProperties legalEntitySagaConfigurationProperties) {
+                           BatchProductIngestionSaga batchProductIngestionSaga,
+                           LegalEntitySagaConfigurationProperties legalEntitySagaConfigurationProperties) {
         this.legalEntityService = legalEntityService;
         this.userService = userService;
         this.userProfileService = userProfileService;
@@ -116,6 +120,7 @@ public class LegalEntitySaga implements StreamTaskExecutor<LegalEntityTask> {
     @Override
     public Mono<LegalEntityTask> executeTask(@SpanTag(value = "streamTask") LegalEntityTask streamTask) {
         return upsertLegalEntity(streamTask)
+//            .map(this::validateLegalEntityTask)
             .flatMap(this::setupAdministrators)
             .flatMap(this::setupUsers)
             .flatMap(this::setupServiceAgreement)
@@ -180,6 +185,7 @@ public class LegalEntitySaga implements StreamTaskExecutor<LegalEntityTask> {
                     .then(legalEntityService.deleteLegalEntity(legalEntityExternalId));
             });
     }
+
 
     @ContinueSpan(log = UPSERT_LEGAL_ENTITY)
     private Mono<LegalEntityTask> upsertLegalEntity(@SpanTag(value = "streamTask") LegalEntityTask task) {

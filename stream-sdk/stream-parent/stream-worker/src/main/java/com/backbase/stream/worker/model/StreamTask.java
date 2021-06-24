@@ -4,9 +4,11 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.cloud.sleuth.annotation.ContinueSpan;
 import org.springframework.cloud.sleuth.annotation.SpanTag;
 
@@ -29,25 +31,25 @@ public abstract class StreamTask {
     }
 
     public void info(String entity, String operation, String result, String externalId, String internalId,
-        String message, Object... messageArgs) {
+                     String message, Object... messageArgs) {
         addHistory(entity, operation, result, externalId, internalId, String.format(message, messageArgs),
             TaskHistory.Severity.INFO, null, null);
     }
 
     public void warn(String entity, String operation, String result, String externalId, String internalId,
-        String message, Object... messageArgs) {
+                     String message, Object... messageArgs) {
         addHistory(entity, operation, result, externalId, internalId, String.format(message, messageArgs),
             TaskHistory.Severity.WARN, null, null);
     }
 
     public void error(String entity, String operation, String result, String externalId, String internalId,
-        String message, Object... messageArgs) {
+                      String message, Object... messageArgs) {
         addHistory(entity, operation, result, externalId, internalId, String.format(message, messageArgs),
             TaskHistory.Severity.ERROR, null, null);
     }
 
     public void error(String entity, String operation, String result, String externalId, String internalId,
-        Throwable throwable, String errorMessage, String message, Object... messageArgs) {
+                      Throwable throwable, String errorMessage, String message, Object... messageArgs) {
         addHistory(entity, operation, result, externalId, internalId, String.format(message, messageArgs),
             TaskHistory.Severity.ERROR, throwable, errorMessage);
     }
@@ -101,16 +103,18 @@ public abstract class StreamTask {
         COMPLETED
     }
 
+    public void logSummary(Logger log) {
+        log.info("\n\n" +
+                "Stream Task: {}\n" +
+                "Status: {}\n\n" +
+                "History:\n{}\n",
+            this.getId(),
+            this.getState(), "\t" + this.getHistory().stream().map(TaskHistory::toDisplayString)
+                .collect(Collectors.joining("\n\t")));
+    }
+
     public void logSummary() {
-        if (log.isDebugEnabled()) {
-            log.info("\n\n" +
-                    "Stream Task: {}\n" +
-                    "Status: {}\n\n" +
-                    "History:\n{}\n",
-                this.getId(),
-                this.getState(), "\t" + this.getHistory().stream().map(TaskHistory::toDisplayString)
-                    .collect(Collectors.joining("\n\t")));
-        }
+        this.logSummary(log);
     }
 
 

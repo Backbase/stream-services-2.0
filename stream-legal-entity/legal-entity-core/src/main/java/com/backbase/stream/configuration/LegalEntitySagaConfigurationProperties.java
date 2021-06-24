@@ -2,12 +2,14 @@ package com.backbase.stream.configuration;
 
 import com.backbase.stream.worker.configuration.StreamWorkerConfiguration;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("backbase.stream.legalentity.sink")
-@Data
-@NoArgsConstructor
+@Getter
+@Setter
 public class LegalEntitySagaConfigurationProperties extends StreamWorkerConfiguration {
 
     /**
@@ -19,5 +21,7 @@ public class LegalEntitySagaConfigurationProperties extends StreamWorkerConfigur
      * Enable User Profile
      */
     private boolean userProfileEnabled = false;
+
+
 
 }

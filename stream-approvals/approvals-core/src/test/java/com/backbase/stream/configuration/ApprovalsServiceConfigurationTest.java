@@ -2,7 +2,7 @@ package com.backbase.stream.configuration;
 
 import com.backbase.dbs.approval.api.service.ApiClient;
 import com.backbase.stream.config.BackbaseStreamConfigurationProperties;
-import com.backbase.stream.config.BackbaseStreamConfigurationProperties.DbsConnectionProperties;
+import com.backbase.stream.config.DbsConnectionProperties;
 import com.backbase.stream.service.ApprovalsIntegrationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.text.DateFormat;

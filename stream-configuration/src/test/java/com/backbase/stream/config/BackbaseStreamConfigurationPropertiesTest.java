@@ -1,7 +1,5 @@
 package com.backbase.stream.config;
 
-import com.backbase.stream.config.BackbaseStreamConfigurationProperties.DbsConnectionProperties;
-import com.backbase.stream.config.BackbaseStreamConfigurationProperties.IdentityConnectionProperties;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

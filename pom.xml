@@ -30,7 +30,6 @@
         <module>stream-transactions</module>
         <module>stream-cursor</module>
 
-        <module>stream-audit</module>
         <module>stream-product-catalog</module>
 
         <module>stream-legal-entity</module>

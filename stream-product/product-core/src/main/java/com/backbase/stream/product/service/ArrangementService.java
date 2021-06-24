@@ -18,6 +18,8 @@ import com.backbase.stream.product.exception.ArrangementUpdateException;
 import com.backbase.stream.product.mapping.ProductMapper;
 import java.util.Collections;
 import java.util.List;
+
+import com.backbase.stream.product.task.BatchProductGroupTask;
 import lombok.extern.slf4j.Slf4j;
 import org.mapstruct.factory.Mappers;
 import org.springframework.core.ParameterizedTypeReference;
@@ -76,12 +78,15 @@ public class ArrangementService {
      * @param arrangementItems list of arrangements to be upserted.
      * @return flux of response items.
      */
-    public Flux<AccountBatchResponseItemExtended> upsertBatchArrangements(List<AccountArrangementItemPost> arrangementItems) {
+    public Flux<AccountBatchResponseItemExtended> upsertBatchArrangements(List<AccountArrangementItemPost> arrangementItems, BatchProductGroupTask task) {
         return arrangementsApi.postBatchUpsertArrangements(arrangementItems)
                 .map(r -> {
                     log.info("Batch Arrangement update result for arrangementId: {}, resourceId: {}, action: {}, result: {}", r.getArrangementId(), r.getResourceId(), r.getAction(), r.getStatus());
                     // Check if any failed, then fail everything.
+
+
                     if (!BatchResponseStatusCode.HTTP_STATUS_OK.equals(r.getStatus())) {
+                        r.getErrors().forEach(errorItem -> log.error("Error [{}]: {}",errorItem.getKey(), errorItem.getMessage()));
                         throw new IllegalStateException("Batch arrangement update failed: " + r.getResourceId());
                     }
                     return r;
