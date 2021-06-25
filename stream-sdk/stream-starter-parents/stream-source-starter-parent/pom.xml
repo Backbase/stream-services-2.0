@@ -19,7 +19,6 @@
         <!--
         Specify the url of Spring Cloud Data Flow
         -->
-        <scdf-maven-plugin.dataflowUrl />
         <spring-cloud-dataflow-apps-docs-plugin.version>1.0.3</spring-cloud-dataflow-apps-docs-plugin.version>
         <spring-cloud-dataflow-apps-metadata-plugin.version>1.0.3</spring-cloud-dataflow-apps-metadata-plugin.version>
     </properties>
@@ -140,13 +139,6 @@
                 </executions>
                 <configuration>
                     <mainClass>${start-class}</mainClass>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>com.backbase.oss</groupId>
-                <artifactId>scdf-maven-plugin</artifactId>
-                <configuration>
-                    <type>SOURCE</type>
                 </configuration>
             </plugin>
 

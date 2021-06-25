@@ -83,13 +83,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>com.backbase.oss</groupId>
-                <artifactId>scdf-maven-plugin</artifactId>
-                <configuration>
-                    <type>APP</type>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
             </plugin>

@@ -15,13 +15,6 @@
     <name>Stream :: SDK :: Processor Starter</name>
     <description>Parent for Spring Cloud Stream Data Flow Source</description>
 
-    <properties>
-        <!--
-        Specify the url of Spring Cloud Data Flow
-        -->
-        <scdf-maven-plugin.dataflowUrl />
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -62,13 +55,6 @@
                 </executions>
                 <configuration>
                     <mainClass>${start-class}</mainClass>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>com.backbase.oss</groupId>
-                <artifactId>scdf-maven-plugin</artifactId>
-                <configuration>
-                    <type>PROCESSOR</type>
                 </configuration>
             </plugin>
             <plugin>
