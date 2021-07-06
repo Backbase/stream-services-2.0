@@ -5,6 +5,7 @@ import com.backbase.dbs.accesscontrol.api.service.v2.model.FunctionGroupItem;
 import com.backbase.dbs.accesscontrol.api.service.v2.model.ParticipantIngest;
 import com.backbase.dbs.accesscontrol.api.service.v2.model.PresentationIngestFunctionGroup;
 import com.backbase.dbs.accesscontrol.api.service.v2.model.PresentationPermission;
+import com.backbase.dbs.accesscontrol.api.service.v2.model.PresentationPermissionFunctionGroupUpdate;
 import com.backbase.dbs.accesscontrol.api.service.v2.model.ServiceAgreementItem;
 import com.backbase.dbs.accesscontrol.api.service.v2.model.ServiceAgreementItemQuery;
 import com.backbase.dbs.accesscontrol.api.service.v2.model.ServiceAgreementPut;
@@ -16,6 +17,7 @@ import com.backbase.stream.legalentity.model.LegalEntityParticipant;
 import com.backbase.stream.legalentity.model.Privilege;
 import com.backbase.stream.legalentity.model.ServiceAgreement;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -55,7 +57,7 @@ public interface AccessGroupMapper {
      */
     default List<PresentationPermission> toPresentation(List<BusinessFunctionGroup> functionGroups) {
         if (Objects.isNull(functionGroups)) {
-            return null;
+            return Collections.emptyList();
         }
 
         return functionGroups.stream()
@@ -65,6 +67,28 @@ public interface AccessGroupMapper {
             .map(f -> {
                 PresentationPermission presentationPermission = new PresentationPermission();
                 presentationPermission.setFunctionId(f.getFunctionId());
+                f.getPrivileges().stream()
+                    .filter(Objects::nonNull)
+                    .map(Privilege::getPrivilege)
+                    .forEach(presentationPermission::addPrivilegesItem);
+
+                return presentationPermission;
+            }).collect(Collectors.toList());
+    }
+
+    default List<PresentationPermissionFunctionGroupUpdate> toUpdate(List<BusinessFunctionGroup> functionGroups) {
+        if (Objects.isNull(functionGroups)) {
+            return Collections.emptyList();
+        }
+
+        return functionGroups.stream()
+            .filter(Objects::nonNull)
+            .map(BusinessFunctionGroup::getFunctions)
+            .flatMap(Collection::stream)
+            .map(f -> {
+                PresentationPermissionFunctionGroupUpdate presentationPermission
+                    = new PresentationPermissionFunctionGroupUpdate();
+                presentationPermission.functionName(f.getName());
                 f.getPrivileges().stream()
                     .filter(Objects::nonNull)
                     .map(Privilege::getPrivilege)

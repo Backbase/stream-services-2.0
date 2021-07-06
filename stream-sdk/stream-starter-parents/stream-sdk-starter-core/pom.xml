@@ -12,7 +12,7 @@
 
     <groupId>com.backbase.stream</groupId>
     <artifactId>stream-sdk-starter-core</artifactId>
-    <version>2.35.0</version>
+    <version>2.40.0</version>
     <packaging>pom</packaging>
     <name>Stream :: SDK :: Starter Core</name>
     <description>Parent for all Stream SDK modules</description>
@@ -266,7 +266,7 @@
         <dependency>
             <groupId>com.backbase.stream</groupId>
             <artifactId>stream-test-support</artifactId>
-            <version>2.35.0</version>
+            <version>2.40.0</version>
             <scope>test</scope>
         </dependency>
 

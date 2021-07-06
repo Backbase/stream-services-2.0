@@ -5,12 +5,12 @@
     <parent>
         <groupId>com.backbase.stream</groupId>
         <artifactId>stream-task-starter-parent</artifactId>
-        <version>2.35.0</version>
+        <version>2.40.0</version>
         <relativePath>../../stream-sdk/stream-starter-parents/stream-task-starter-parent</relativePath>
     </parent>
 
     <artifactId>approvals-bootstrap-task</artifactId>
-    <version>2.35.0</version>
+    <version>2.40.0</version>
 
     <packaging>jar</packaging>
     <name>Stream :: Approvals Bootstrap Task</name>

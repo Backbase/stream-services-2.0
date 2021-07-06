@@ -5,12 +5,12 @@
     <parent>
         <groupId>com.backbase.stream</groupId>
         <artifactId>stream-sdk-starter-core</artifactId>
-        <version>2.35.0</version>
+        <version>2.40.0</version>
         <relativePath>../stream-sdk-starter-core</relativePath>
     </parent>
 
     <artifactId>stream-generated-client-starter-parent</artifactId>
-    <version>2.35.0</version>
+    <version>2.40.0</version>
     <packaging>pom</packaging>
     <name>Stream :: SDK :: Generated Web Client Starter</name>
     <description>Parent for all Generated Web Clients from OpenAPI. Disables checkstyle plugin, as generated code does not

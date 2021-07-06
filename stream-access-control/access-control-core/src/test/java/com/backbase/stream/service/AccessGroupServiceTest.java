@@ -26,7 +26,13 @@ import com.backbase.dbs.accesscontrol.api.service.v2.ServiceAgreementsApi;
 import com.backbase.dbs.accesscontrol.api.service.v2.UserQueryApi;
 import com.backbase.dbs.accesscontrol.api.service.v2.UsersApi;
 import com.backbase.dbs.accesscontrol.api.service.v2.model.BatchResponseItemExtended;
+import com.backbase.dbs.accesscontrol.api.service.v2.model.FunctionGroupItem;
+import com.backbase.dbs.accesscontrol.api.service.v2.model.PersistenceApprovalPermissions;
+import com.backbase.dbs.accesscontrol.api.service.v2.model.PersistenceApprovalPermissionsGetResponseBody;
 import com.backbase.dbs.accesscontrol.api.service.v2.model.PresentationAction;
+import com.backbase.dbs.accesscontrol.api.service.v2.model.PresentationAssignUserPermissions;
+import com.backbase.dbs.accesscontrol.api.service.v2.model.PresentationFunctionGroupDataGroup;
+import com.backbase.dbs.accesscontrol.api.service.v2.model.PresentationIdentifier;
 import com.backbase.dbs.accesscontrol.api.service.v2.model.PresentationParticipantBatchUpdate;
 import com.backbase.dbs.accesscontrol.api.service.v2.model.PresentationParticipantPutBody;
 import com.backbase.dbs.accesscontrol.api.service.v2.model.PresentationServiceAgreementUserPair;
@@ -35,20 +41,27 @@ import com.backbase.dbs.accesscontrol.api.service.v2.model.ServiceAgreementItem;
 import com.backbase.dbs.accesscontrol.api.service.v2.model.ServiceAgreementParticipantsGetResponseBody;
 import com.backbase.dbs.accesscontrol.api.service.v2.model.ServiceAgreementUsersQuery;
 import com.backbase.dbs.user.api.service.v2.UserManagementApi;
+import com.backbase.stream.legalentity.model.BaseProductGroup;
+import com.backbase.stream.legalentity.model.BatchProductGroup;
+import com.backbase.stream.legalentity.model.BusinessFunctionGroup;
 import com.backbase.stream.legalentity.model.JobProfileUser;
 import com.backbase.stream.legalentity.model.LegalEntityParticipant;
 import com.backbase.stream.legalentity.model.ServiceAgreement;
 import com.backbase.stream.legalentity.model.ServiceAgreementUserAction;
 import com.backbase.stream.legalentity.model.User;
+import com.backbase.stream.product.task.BatchProductGroupTask;
 import com.backbase.stream.worker.exception.StreamTaskException;
 import com.backbase.stream.worker.model.StreamTask;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -310,6 +323,215 @@ class AccessGroupServiceTest {
             eq("p2"), eq(null), any(String.class), any(String.class), any(String.class));
         verifier.verify(streamTask).error(eq("participant"), eq("update-participant"), eq("failed"),
             eq("p3"), eq(null), any(String.class), any(String.class), any(String.class));
+    }
+
+    @Test
+    void assignPermissionsBatch() {
+        // Given
+        BatchProductGroupTask batchProductGroupTask = new BatchProductGroupTask().data(
+            new BatchProductGroup().serviceAgreement(new ServiceAgreement().externalId("sa_benedict").internalId("sa-internal-id"))
+        );
+        batchProductGroupTask.setIngestionMode(BatchProductGroupTask.IngestionMode.UPDATE);
+
+        Map<BusinessFunctionGroup, List<BaseProductGroup>> baseProductGroupMap = new HashMap<>();
+        baseProductGroupMap.put(new BusinessFunctionGroup().id("business-function-group-id-1"), Collections.emptyList());
+
+        Map<User, Map<BusinessFunctionGroup, List<BaseProductGroup>>> usersPermissions = new HashMap<>();
+        usersPermissions.put(
+            new User().internalId("user-internal-id").externalId("benedict"),
+            baseProductGroupMap
+        );
+
+        List<PresentationAssignUserPermissions> expectedPermissions = Collections.singletonList(
+            new PresentationAssignUserPermissions()
+                .externalUserId("benedict")
+                .externalServiceAgreementId("sa_benedict")
+                .functionGroupDataGroups(Arrays.asList(
+                    new PresentationFunctionGroupDataGroup().functionGroupIdentifier(
+                        new PresentationIdentifier().idIdentifier("system-group-id-2")
+                    ).dataGroupIdentifiers(Collections.emptyList()),
+                    new PresentationFunctionGroupDataGroup().functionGroupIdentifier(
+                        new PresentationIdentifier().idIdentifier("system-group-id-3")
+                    ).dataGroupIdentifiers(Collections.emptyList())
+                ))
+        );
+
+        when(functionGroupApi.getFunctionGroups("sa-internal-id"))
+            .thenReturn(Flux.just(
+                new FunctionGroupItem().id("system-group-id-1").name("SYSTEM_FUNCTION_GROUP").type(FunctionGroupItem.TypeEnum.SYSTEM),
+                new FunctionGroupItem().id("system-group-id-2").name("Full access").type(FunctionGroupItem.TypeEnum.TEMPLATE)
+            ));
+
+        when(userQueryApi.getPersistenceApprovalPermissions("user-internal-id", "sa-internal-id"))
+            .thenReturn(Mono.just(new PersistenceApprovalPermissions().items(Arrays.asList(
+                new PersistenceApprovalPermissionsGetResponseBody().functionGroupId("system-group-id-1").dataGroupIds(Collections.emptyList()),
+                new PersistenceApprovalPermissionsGetResponseBody().functionGroupId("system-group-id-2").dataGroupIds(Collections.emptyList()),
+                new PersistenceApprovalPermissionsGetResponseBody().functionGroupId("system-group-id-3").dataGroupIds(Collections.emptyList())
+            ))));
+
+        when(accessControlUsersApi.putAssignUserPermissions(expectedPermissions))
+            .thenReturn(Flux.just(
+                new BatchResponseItemExtended().resourceId("resource-id").status(HTTP_STATUS_OK).errors(Collections.emptyList())
+            ));
+
+        // When
+        BatchProductGroupTask result = subject.assignPermissionsBatch(batchProductGroupTask, usersPermissions)
+            .block();
+
+        // Then
+        Assertions.assertSame(batchProductGroupTask, result);
+
+        verify(accessControlUsersApi).putAssignUserPermissions(expectedPermissions);
+    }
+
+    @Test
+    void assignPermissionsBatchNoExistingFunctionGroups() {
+        // Given
+        BatchProductGroupTask batchProductGroupTask = new BatchProductGroupTask().data(
+            new BatchProductGroup().serviceAgreement(new ServiceAgreement().externalId("sa_benedict").internalId("sa-internal-id"))
+        );
+        batchProductGroupTask.setIngestionMode(BatchProductGroupTask.IngestionMode.UPDATE);
+
+        Map<BusinessFunctionGroup, List<BaseProductGroup>> baseProductGroupMap = new HashMap<>();
+        baseProductGroupMap.put(new BusinessFunctionGroup().id("business-function-group-id-1"), Collections.emptyList());
+
+        Map<User, Map<BusinessFunctionGroup, List<BaseProductGroup>>> usersPermissions = new HashMap<>();
+        usersPermissions.put(
+            new User().internalId("user-internal-id").externalId("benedict"),
+            baseProductGroupMap
+        );
+
+        List<PresentationAssignUserPermissions> expectedPermissions = Collections.singletonList(
+            new PresentationAssignUserPermissions()
+                .externalUserId("benedict")
+                .externalServiceAgreementId("sa_benedict")
+                .functionGroupDataGroups(Arrays.asList(
+                    new PresentationFunctionGroupDataGroup().functionGroupIdentifier(
+                        new PresentationIdentifier().idIdentifier("system-group-id-1")
+                    ).dataGroupIdentifiers(Collections.emptyList()),
+                    new PresentationFunctionGroupDataGroup().functionGroupIdentifier(
+                        new PresentationIdentifier().idIdentifier("system-group-id-2")
+                    ).dataGroupIdentifiers(Collections.emptyList())
+                ))
+        );
+
+        when(functionGroupApi.getFunctionGroups("sa-internal-id"))
+            .thenReturn(Flux.just());
+
+        when(userQueryApi.getPersistenceApprovalPermissions("user-internal-id", "sa-internal-id"))
+            .thenReturn(Mono.just(new PersistenceApprovalPermissions().items(Arrays.asList(
+                new PersistenceApprovalPermissionsGetResponseBody().functionGroupId("system-group-id-1").dataGroupIds(Collections.emptyList()),
+                new PersistenceApprovalPermissionsGetResponseBody().functionGroupId("system-group-id-2").dataGroupIds(Collections.emptyList())
+            ))));
+
+        when(accessControlUsersApi.putAssignUserPermissions(expectedPermissions))
+            .thenReturn(Flux.just(
+                new BatchResponseItemExtended().resourceId("resource-id").status(HTTP_STATUS_OK).errors(Collections.emptyList())
+            ));
+
+        // When
+        BatchProductGroupTask result = subject.assignPermissionsBatch(batchProductGroupTask, usersPermissions)
+            .block();
+
+        // Then
+        Assertions.assertSame(batchProductGroupTask, result);
+
+        verify(accessControlUsersApi).putAssignUserPermissions(expectedPermissions);
+    }
+
+    @Test
+    void assignPermissionsBatchIngestionModeReplace() {
+        // Given
+        BatchProductGroupTask batchProductGroupTask = new BatchProductGroupTask().data(
+            new BatchProductGroup().serviceAgreement(new ServiceAgreement().externalId("sa_benedict").internalId("sa-internal-id"))
+        );
+        batchProductGroupTask.setIngestionMode(BatchProductGroupTask.IngestionMode.REPLACE);
+
+        Map<BusinessFunctionGroup, List<BaseProductGroup>> baseProductGroupMap = new HashMap<>();
+        baseProductGroupMap.put(new BusinessFunctionGroup().id("business-function-group-id-1"), Collections.emptyList());
+
+        Map<User, Map<BusinessFunctionGroup, List<BaseProductGroup>>> usersPermissions = new HashMap<>();
+        usersPermissions.put(
+            new User().internalId("user-internal-id").externalId("benedict"),
+            baseProductGroupMap
+        );
+
+        List<PresentationAssignUserPermissions> expectedPermissions = Collections.singletonList(
+            new PresentationAssignUserPermissions()
+                .externalUserId("benedict")
+                .externalServiceAgreementId("sa_benedict")
+                .functionGroupDataGroups(Collections.singletonList(
+                    new PresentationFunctionGroupDataGroup().functionGroupIdentifier(
+                        new PresentationIdentifier().idIdentifier("business-function-group-id-1")
+                    ).dataGroupIdentifiers(Collections.emptyList())
+                ))
+        );
+
+        when(accessControlUsersApi.putAssignUserPermissions(expectedPermissions))
+            .thenReturn(Flux.just(
+                new BatchResponseItemExtended().resourceId("resource-id").status(HTTP_STATUS_OK).errors(Collections.emptyList())
+            ));
+
+        // When
+        BatchProductGroupTask result = subject.assignPermissionsBatch(batchProductGroupTask, usersPermissions)
+            .block();
+
+        // Then
+        Assertions.assertSame(batchProductGroupTask, result);
+
+        verify(accessControlUsersApi).putAssignUserPermissions(expectedPermissions);
+    }
+
+    @Test
+    void assignPermissionsBatchEmptyExistingPermissions() {
+        // Given
+        BatchProductGroupTask batchProductGroupTask = new BatchProductGroupTask().data(
+            new BatchProductGroup().serviceAgreement(new ServiceAgreement().externalId("sa_benedict").internalId("sa-internal-id"))
+        );
+        batchProductGroupTask.setIngestionMode(BatchProductGroupTask.IngestionMode.UPDATE);
+
+        Map<BusinessFunctionGroup, List<BaseProductGroup>> baseProductGroupMap = new HashMap<>();
+        baseProductGroupMap.put(new BusinessFunctionGroup().id("business-function-group-id-1"), Collections.emptyList());
+
+        Map<User, Map<BusinessFunctionGroup, List<BaseProductGroup>>> usersPermissions = new HashMap<>();
+        usersPermissions.put(
+            new User().internalId("user-internal-id").externalId("benedict"),
+            baseProductGroupMap
+        );
+
+        List<PresentationAssignUserPermissions> expectedPermissions = Collections.singletonList(
+            new PresentationAssignUserPermissions()
+                .externalUserId("benedict")
+                .externalServiceAgreementId("sa_benedict")
+                .functionGroupDataGroups(Collections.singletonList(
+                    new PresentationFunctionGroupDataGroup().functionGroupIdentifier(
+                        new PresentationIdentifier().idIdentifier("business-function-group-id-1")
+                    ).dataGroupIdentifiers(Collections.emptyList())
+                ))
+        );
+
+        when(functionGroupApi.getFunctionGroups("sa-internal-id"))
+            .thenReturn(Flux.just(
+                new FunctionGroupItem().id("system-group-id-1").name("SYSTEM_FUNCTION_GROUP").type(FunctionGroupItem.TypeEnum.SYSTEM),
+                new FunctionGroupItem().id("system-group-id-2").name("Full access").type(FunctionGroupItem.TypeEnum.TEMPLATE)
+            ));
+
+        when(userQueryApi.getPersistenceApprovalPermissions("user-internal-id", "sa-internal-id"))
+            .thenReturn(Mono.just(new PersistenceApprovalPermissions().items(Collections.emptyList())));
+
+        when(accessControlUsersApi.putAssignUserPermissions(expectedPermissions))
+            .thenReturn(Flux.just(
+                new BatchResponseItemExtended().resourceId("resource-id").status(HTTP_STATUS_OK).errors(Collections.emptyList())
+            ));
+
+        // When
+        BatchProductGroupTask result = subject.assignPermissionsBatch(batchProductGroupTask, usersPermissions)
+            .block();
+
+        // Then
+        Assertions.assertSame(batchProductGroupTask, result);
+
+        verify(accessControlUsersApi).putAssignUserPermissions(expectedPermissions);
     }
 
     private void thenRegularUsersUpdateCall(String expectedSaExId, PresentationAction expectedAction,
