@@ -1401,7 +1401,7 @@ public class AccessGroupService {
             .filter(Objects::nonNull)
             .flatMap(Collection::stream)
             .map(PresentationPermissionFunctionGroupUpdate::getFunctionName)
-            .anyMatch(Predicate.not(StringUtils::hasText));
+            .noneMatch(StringUtils::hasText);
     }
 
     private List<PresentationPermissionFunctionGroupUpdate> getUpdatePermissions(BusinessFunctionGroup bfg) {
