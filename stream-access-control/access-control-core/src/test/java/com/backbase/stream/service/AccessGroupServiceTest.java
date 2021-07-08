@@ -384,6 +384,11 @@ class AccessGroupServiceTest {
         verify(accessControlUsersApi).putAssignUserPermissions(expectedPermissions);
     }
 
+    /*
+       Request contains business-function-group-id-1
+       Existing permissions are: system-group-id-1, function-group-id-1 and business-function-group-id-1
+       Expectation is to have function-group-id-1 and business-function-group-id-1 in PUT permissions request together with data group ids specified in request
+     */
     @Test
     void assignPermissionsBatchNoExistingFunctionGroups() {
         // Given
@@ -393,7 +398,10 @@ class AccessGroupServiceTest {
         batchProductGroupTask.setIngestionMode(BatchProductGroupTask.IngestionMode.UPDATE);
 
         Map<BusinessFunctionGroup, List<BaseProductGroup>> baseProductGroupMap = new HashMap<>();
-        baseProductGroupMap.put(new BusinessFunctionGroup().id("business-function-group-id-1"), Collections.emptyList());
+        baseProductGroupMap.put(
+            new BusinessFunctionGroup().id("business-function-group-id-1"),
+            Collections.singletonList(new BaseProductGroup().internalId("data-group-0"))
+        );
 
         Map<User, Map<BusinessFunctionGroup, List<BaseProductGroup>>> usersPermissions = new HashMap<>();
         usersPermissions.put(
@@ -407,21 +415,27 @@ class AccessGroupServiceTest {
                 .externalServiceAgreementId("sa_benedict")
                 .functionGroupDataGroups(Arrays.asList(
                     new PresentationFunctionGroupDataGroup().functionGroupIdentifier(
-                        new PresentationIdentifier().idIdentifier("system-group-id-1")
+                        new PresentationIdentifier().idIdentifier("function-group-id-1")
                     ).dataGroupIdentifiers(Collections.emptyList()),
                     new PresentationFunctionGroupDataGroup().functionGroupIdentifier(
-                        new PresentationIdentifier().idIdentifier("system-group-id-2")
-                    ).dataGroupIdentifiers(Collections.emptyList())
+                        new PresentationIdentifier().idIdentifier("business-function-group-id-1")
+                    ).dataGroupIdentifiers(Arrays.asList(
+                        new PresentationIdentifier().idIdentifier("data-group-1"),
+                        new PresentationIdentifier().idIdentifier("data-group-0")
+                    ))
                 ))
         );
 
         when(functionGroupApi.getFunctionGroups("sa-internal-id"))
-            .thenReturn(Flux.just());
+            .thenReturn(Flux.just(
+                new FunctionGroupItem().id("system-group-id-1").name("SFG").type(FunctionGroupItem.TypeEnum.SYSTEM),
+                new FunctionGroupItem().id("function-group-id-1").name("Full access").type(FunctionGroupItem.TypeEnum.TEMPLATE)
+            ));
 
         when(userQueryApi.getPersistenceApprovalPermissions("user-internal-id", "sa-internal-id"))
             .thenReturn(Mono.just(new PersistenceApprovalPermissions().items(Arrays.asList(
-                new PersistenceApprovalPermissionsGetResponseBody().functionGroupId("system-group-id-1").dataGroupIds(Collections.emptyList()),
-                new PersistenceApprovalPermissionsGetResponseBody().functionGroupId("system-group-id-2").dataGroupIds(Collections.emptyList())
+                new PersistenceApprovalPermissionsGetResponseBody().functionGroupId("function-group-id-1").dataGroupIds(Collections.emptyList()),
+                new PersistenceApprovalPermissionsGetResponseBody().functionGroupId("business-function-group-id-1").dataGroupIds(Collections.singletonList("data-group-1"))
             ))));
 
         when(accessControlUsersApi.putAssignUserPermissions(expectedPermissions))
@@ -482,6 +496,11 @@ class AccessGroupServiceTest {
         verify(accessControlUsersApi).putAssignUserPermissions(expectedPermissions);
     }
 
+    /*
+       Request contains business-function-group-id-1
+       Existing permissions are empty
+       Expectation is to have business-function-group-id-1 in PUT permissions request
+     */
     @Test
     void assignPermissionsBatchEmptyExistingPermissions() {
         // Given
@@ -518,6 +537,69 @@ class AccessGroupServiceTest {
 
         when(userQueryApi.getPersistenceApprovalPermissions("user-internal-id", "sa-internal-id"))
             .thenReturn(Mono.just(new PersistenceApprovalPermissions().items(Collections.emptyList())));
+
+        when(accessControlUsersApi.putAssignUserPermissions(expectedPermissions))
+            .thenReturn(Flux.just(
+                new BatchResponseItemExtended().resourceId("resource-id").status(HTTP_STATUS_OK).errors(Collections.emptyList())
+            ));
+
+        // When
+        BatchProductGroupTask result = subject.assignPermissionsBatch(batchProductGroupTask, usersPermissions)
+            .block();
+
+        // Then
+        Assertions.assertSame(batchProductGroupTask, result);
+
+        verify(accessControlUsersApi).putAssignUserPermissions(expectedPermissions);
+    }
+
+    /*
+       Request contains business-function-group-id-1
+       Existing permissions returns only SFG system-group-id-1
+       Expectation is to have business-function-group-id-1 in PUT permissions request
+     */
+    @Test
+    void assignPermissionsBatchOnlySystemFunctionGroupExists() {
+        // Given
+        BatchProductGroupTask batchProductGroupTask = new BatchProductGroupTask().data(
+            new BatchProductGroup().serviceAgreement(new ServiceAgreement().externalId("sa_benedict").internalId("sa-internal-id"))
+        );
+        batchProductGroupTask.setIngestionMode(BatchProductGroupTask.IngestionMode.UPDATE);
+
+        Map<BusinessFunctionGroup, List<BaseProductGroup>> baseProductGroupMap = new HashMap<>();
+        baseProductGroupMap.put(
+            new BusinessFunctionGroup().id("business-function-group-id-1"),
+            Collections.singletonList(new BaseProductGroup().internalId("data-group-0"))
+        );
+
+        Map<User, Map<BusinessFunctionGroup, List<BaseProductGroup>>> usersPermissions = new HashMap<>();
+        usersPermissions.put(
+            new User().internalId("user-internal-id").externalId("benedict"),
+            baseProductGroupMap
+        );
+
+        List<PresentationAssignUserPermissions> expectedPermissions = Collections.singletonList(
+            new PresentationAssignUserPermissions()
+                .externalUserId("benedict")
+                .externalServiceAgreementId("sa_benedict")
+                .functionGroupDataGroups(Collections.singletonList(
+                    new PresentationFunctionGroupDataGroup().functionGroupIdentifier(
+                        new PresentationIdentifier().idIdentifier("business-function-group-id-1")
+                    ).dataGroupIdentifiers(Collections.singletonList(new PresentationIdentifier().idIdentifier("data-group-0")))
+                ))
+        );
+
+        when(functionGroupApi.getFunctionGroups("sa-internal-id"))
+            .thenReturn(Flux.just(
+                new FunctionGroupItem().id("system-group-id-1").name("SYSTEM_FUNCTION_GROUP").type(FunctionGroupItem.TypeEnum.SYSTEM)
+            ));
+
+        when(userQueryApi.getPersistenceApprovalPermissions("user-internal-id", "sa-internal-id"))
+            .thenReturn(Mono.just(new PersistenceApprovalPermissions().items(Collections.singletonList(
+                new PersistenceApprovalPermissionsGetResponseBody()
+                    .functionGroupId("system-group-id-1")
+                    .dataGroupIds(Arrays.asList("system-data-group-1", "system-data-group-2"))
+            ))));
 
         when(accessControlUsersApi.putAssignUserPermissions(expectedPermissions))
             .thenReturn(Flux.just(

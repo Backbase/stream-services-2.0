@@ -1,13 +1,14 @@
 package com.backbase.stream.webclient.configuration;
 
+import static java.util.Arrays.asList;
+
+import java.util.ArrayList;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.util.MultiValueMap;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @ConfigurationProperties("backbase.stream.client")
 @Data
@@ -25,5 +26,9 @@ public class DbsWebClientConfigurationProperties {
      */
     private MultiValueMap<String, String> additionalHeaders = null;
 
+    /**
+     * Header keys from the original request to forward to DBS
+     */
+    private List<String> headersToForward = asList("X-TID");
 
 }

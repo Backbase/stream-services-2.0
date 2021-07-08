@@ -5,12 +5,12 @@
     <parent>
         <groupId>com.backbase.stream</groupId>
         <artifactId>stream-sink-starter-parent</artifactId>
-        <version>2.40.0</version>
+        <version>2.42.0</version>
         <relativePath>../../stream-sdk/stream-starter-parents/stream-sink-starter-parent</relativePath>
     </parent>
 
     <artifactId>legal-entity-sink</artifactId>
-    <version>2.40.0</version>
+    <version>2.42.0</version>
 
     <packaging>jar</packaging>
     <name>Stream :: Legal Entity Sink</name>
@@ -20,7 +20,7 @@
         <dependency>
             <groupId>com.backbase.stream</groupId>
             <artifactId>legal-entity-core</artifactId>
-            <version>2.40.0</version>
+            <version>2.42.0</version>
         </dependency>
 
     </dependencies>

@@ -42,6 +42,8 @@ import java.util.*;
 @Slf4j
 public class DbsWebClientConfiguration {
 
+    public static final String CONTEXT_KEY_FORWARDED_HEADERS = "headers";
+
     /**
      * Default Jackson Object Mapper.
      *
@@ -105,10 +107,14 @@ public class DbsWebClientConfiguration {
                     .orElse(clientRequest);
 
                 return Mono.subscriberContext().flatMap(context -> {
+                    Optional<MultiValueMap<String, String>> forwardHeaders =
+                        context.<MultiValueMap<String, String>>getOrEmpty(CONTEXT_KEY_FORWARDED_HEADERS);
+                    log.debug("context contains headers? " + forwardHeaders.isPresent());
+                    log.debug("forward headers:" + forwardHeaders.map(MultiValueMap::toString).orElse("null"));
                     ClientRequest contextRequest = context.<MultiValueMap<String, String>>getOrEmpty("headers")
                         .map(headers -> {
                             log.debug("Adding additional headers: {} from Reactive subscriber context to Request: {}", headers, clientRequest.url());
-                            return ClientRequest.from(clientRequest)
+                            return ClientRequest.from(newRequest)
                                 .headers(httpHeaders -> httpHeaders.addAll(headers))
                                 .build();
                         })

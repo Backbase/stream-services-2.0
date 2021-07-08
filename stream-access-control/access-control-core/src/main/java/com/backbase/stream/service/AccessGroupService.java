@@ -602,6 +602,11 @@ public class AccessGroupService {
             .flatMap(user -> userQueryApi.getPersistenceApprovalPermissions(user.getInternalId(), task.getData().getServiceAgreement().getInternalId())
                 .onErrorResume(WebClientResponseException.NotFound.class, e -> Mono.empty())
                 .map(PersistenceApprovalPermissions::getItems)
+                .map(items -> items.stream()
+                    // System Function Group should not be part of PUT permissions request as it cannot be modified
+                    .filter(existingPermission -> !systemFunctionGroupIds.contains(existingPermission.getFunctionGroupId()))
+                    .collect(Collectors.toList())
+                )
                 .map(existingUserPermissions -> {
                     log.info("Retrieved permissions for user with externalId {} : {}", user.getExternalId(), existingUserPermissions.stream().map(p -> p.getFunctionGroupId() + " : [" + p.getDataGroupIds() + "] ").collect(Collectors.toList()));
 
@@ -618,37 +623,35 @@ public class AccessGroupService {
                         mergedUserPermissions.setFunctionGroupDataGroups(requestUserPermissions.getFunctionGroupDataGroups());
                     } else {
                         // merge user permissions in  DBS with the ones already  in request.
-                        existingUserPermissions.stream()
-                            .filter(userPermission -> !systemFunctionGroupIds.contains(userPermission.getFunctionGroupId()))
-                            .forEach(userPermission -> {
-                                String functionGroupId = userPermission.getFunctionGroupId();
-                                Set<String> dataGroupIds = new HashSet<>();
+                        existingUserPermissions.forEach(userPermission -> {
+                            String functionGroupId = userPermission.getFunctionGroupId();
+                            Set<String> dataGroupIds = new HashSet<>();
 
-                                if (userPermission.getDataGroupIds() != null) {
-                                    dataGroupIds.addAll(userPermission.getDataGroupIds());
+                            if (userPermission.getDataGroupIds() != null) {
+                                dataGroupIds.addAll(userPermission.getDataGroupIds());
+                            }
+
+                            Optional<PresentationFunctionGroupDataGroup> requestedFunctionGroupOptional = requestUserPermissions.getFunctionGroupDataGroups().stream()
+                                .filter(requestFunctionGroup -> hasTheSameFunctionGroupId(functionGroupId, requestFunctionGroup))
+                                .findFirst();
+
+                            // If requested function group is already ingested, merge the request and existing function group
+                            if (requestedFunctionGroupOptional.isPresent()) {
+                                PresentationFunctionGroupDataGroup requestedFunctionGroup = requestedFunctionGroupOptional.get();
+
+                                if (requestedFunctionGroup.getDataGroupIdentifiers() != null) {
+                                    dataGroupIds.addAll(requestedFunctionGroup.getDataGroupIdentifiers().stream().map(
+                                        PresentationIdentifier::getIdIdentifier).collect(Collectors.toList()));
                                 }
+                            }
 
-                                Optional<PresentationFunctionGroupDataGroup> requestedFunctionGroupOptional = requestUserPermissions.getFunctionGroupDataGroups().stream()
-                                    .filter(requestFunctionGroup -> hasTheSameFunctionGroupId(functionGroupId, requestFunctionGroup))
-                                    .findFirst();
+                            // Transform existing permissions to PresentationFunctionGroupDataGroup
+                            PresentationFunctionGroupDataGroup functionGroup = new PresentationFunctionGroupDataGroup();
+                            functionGroup.setFunctionGroupIdentifier(mapId(functionGroupId));
+                            functionGroup.setDataGroupIdentifiers(dataGroupIds.stream().map(this::mapId).collect(Collectors.toList()));
 
-                                // If requested function group is already ingested, merge the request and existing function group
-                                if (requestedFunctionGroupOptional.isPresent()) {
-                                    PresentationFunctionGroupDataGroup requestedFunctionGroup = requestedFunctionGroupOptional.get();
-
-                                    if (requestedFunctionGroup.getDataGroupIdentifiers() != null) {
-                                        dataGroupIds.addAll(requestedFunctionGroup.getDataGroupIdentifiers().stream().map(
-                                            PresentationIdentifier::getIdIdentifier).collect(Collectors.toList()));
-                                    }
-                                }
-
-                                // Transform existing permissions to PresentationFunctionGroupDataGroup
-                                PresentationFunctionGroupDataGroup functionGroup = new PresentationFunctionGroupDataGroup();
-                                functionGroup.setFunctionGroupIdentifier(mapId(functionGroupId));
-                                functionGroup.setDataGroupIdentifiers(dataGroupIds.stream().map(this::mapId).collect(Collectors.toList()));
-
-                                mergedUserPermissions.addFunctionGroupDataGroupsItem(functionGroup);
-                            });
+                            mergedUserPermissions.addFunctionGroupDataGroupsItem(functionGroup);
+                        });
                     }
                     return mergedUserPermissions;
                 }))

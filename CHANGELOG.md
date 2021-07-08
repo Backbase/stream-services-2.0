@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2.42.0]
+### Fixed
+- Permissions assignment for user marked as admin was working incorrectly due to fact that System Function Group was returned when no assigned groups expected
+
+## [2.41.0]
+### Changed
+- Add filter to forward `X-TID` headers
+
 ## [2.40.0]
 ### Fixed
 - Fix upserting existing Business function
