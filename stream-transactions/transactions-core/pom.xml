@@ -39,13 +39,6 @@
             <version>${project.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.backbase.stream</groupId>
-            <artifactId>transactions-generator-core</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
     </dependencies>
 
 </project>
