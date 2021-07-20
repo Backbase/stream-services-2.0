@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>legal-entity-bootstrap-task</artifactId>
-    <version>2.42.0</version>
+    <version>2.42.0-space</version>
 
     <packaging>jar</packaging>
     <name>Stream :: Legal Entity Bootstrap Task</name>
@@ -25,7 +25,7 @@
         <dependency>
             <groupId>com.backbase.stream</groupId>
             <artifactId>legal-entity-core</artifactId>
-            <version>2.42.0</version>
+            <version>2.42.0-space</version>
         </dependency>
 
         <dependency>

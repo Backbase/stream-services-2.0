@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>product-sink</artifactId>
-    <version>2.42.0</version>
+    <version>2.42.0-space</version>
 
     <packaging>jar</packaging>
     <name>Stream :: Product Sink</name>
@@ -20,13 +20,13 @@
         <dependency>
             <groupId>com.backbase.stream</groupId>
             <artifactId>product-ingestion-saga</artifactId>
-            <version>2.42.0</version>
+            <version>2.42.0-space</version>
         </dependency>
 
         <dependency>
             <groupId>com.backbase.stream</groupId>
             <artifactId>access-control-core</artifactId>
-            <version>2.42.0</version>
+            <version>2.42.0-space</version>
         </dependency>
 
     </dependencies>

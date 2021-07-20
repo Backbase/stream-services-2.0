@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>cursor-http</artifactId>
-    <version>2.42.0</version>
+    <version>2.42.0-space</version>
 
     <packaging>jar</packaging>
     <name>Stream :: Cursor HTTP</name>
@@ -26,13 +26,13 @@
         <dependency>
             <groupId>com.backbase.stream</groupId>
             <artifactId>cursor-publishers</artifactId>
-            <version>2.42.0</version>
+            <version>2.42.0-space</version>
         </dependency>
 
         <dependency>
             <groupId>com.backbase.stream</groupId>
             <artifactId>cursor-store</artifactId>
-            <version>2.42.0</version>
+            <version>2.42.0-space</version>
         </dependency>
 
     </dependencies>

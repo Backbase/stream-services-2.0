@@ -5,12 +5,12 @@
     <parent>
         <groupId>com.backbase.stream</groupId>
         <artifactId>stream-sdk-starter-core</artifactId>
-        <version>2.42.0</version>
+        <version>2.42.0-space</version>
         <relativePath>../stream-sdk-starter-core</relativePath>
     </parent>
 
     <artifactId>stream-batch-starter-parent</artifactId>
-    <version>2.42.0</version>
+    <version>2.42.0-space</version>
     <packaging>pom</packaging>
     <name>Stream :: SDK :: Batch Starter</name>
     <description>Parent for Spring Batch</description>

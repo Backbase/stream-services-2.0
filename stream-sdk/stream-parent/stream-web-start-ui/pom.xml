@@ -5,11 +5,11 @@
     <parent>
         <groupId>com.backbase.stream</groupId>
         <artifactId>stream-parent</artifactId>
-        <version>2.42.0</version>
+        <version>2.42.0-space</version>
     </parent>
 
     <artifactId>stream-web-start-ui</artifactId>
-    <version>2.42.0</version>
+    <version>2.42.0-space</version>
     <packaging>jar</packaging>
     <name>Stream :: SDK :: Web Start UI</name>
     <description>Shared Start Page for Web Apps based on Stream SDK</description>

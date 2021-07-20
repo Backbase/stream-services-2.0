@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.backbase.stream</groupId>
         <artifactId>stream-access-control</artifactId>
-        <version>2.42.0</version>
+        <version>2.42.0-space</version>
     </parent>
 
     <artifactId>access-control-core</artifactId>
@@ -48,7 +48,7 @@
         <dependency>
             <groupId>com.backbase.stream</groupId>
             <artifactId>product-core</artifactId>
-            <version>2.42.0</version>
+            <version>2.42.0-space</version>
         </dependency>
 
         <dependency>

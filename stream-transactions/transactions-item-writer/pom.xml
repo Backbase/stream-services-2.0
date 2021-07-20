@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>transactions-item-writer</artifactId>
-    <version>2.42.0</version>
+    <version>2.42.0-space</version>
 
     <packaging>jar</packaging>
     <name>Stream :: Transactions Item Writer for Spring Batch</name>
@@ -24,7 +24,7 @@
         <dependency>
             <groupId>com.backbase.stream</groupId>
             <artifactId>transactions-core</artifactId>
-            <version>2.42.0</version>
+            <version>2.42.0-space</version>
         </dependency>
 
     </dependencies>

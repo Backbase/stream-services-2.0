@@ -5,11 +5,11 @@
     <parent>
         <groupId>com.backbase.stream</groupId>
         <artifactId>stream-parent</artifactId>
-        <version>2.42.0</version>
+        <version>2.42.0-space</version>
     </parent>
 
     <artifactId>stream-micrometer-support</artifactId>
-    <version>2.42.0</version>
+    <version>2.42.0-space</version>
     <packaging>jar</packaging>
     <name>Stream :: SDK :: Stream Micro Meter Support</name>
     <description>Autoconfigure Stream Micro Meter tags exposing correct information</description>
