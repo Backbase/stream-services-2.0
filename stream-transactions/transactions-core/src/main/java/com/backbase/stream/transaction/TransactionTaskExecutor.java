@@ -26,7 +26,7 @@ public class TransactionTaskExecutor implements StreamTaskExecutor<TransactionTa
         String externalIds = streamTask.getData().stream().map(TransactionsPostRequestBody::getExternalId)
             .collect(Collectors.joining(","));
         log.info("Post {} transactions: ", data.size());
-        return transactionPresentationServiceApi.postTransactions(data)
+        return transactionPresentationServiceApi.postTransactions(data, null)
             .onErrorResume(WebClientResponseException.class, throwable -> {
                 streamTask.error("transactions", "post", "failed", externalIds, null, throwable,
                     throwable.getResponseBodyAsString(), "Failed to ingest transactions");

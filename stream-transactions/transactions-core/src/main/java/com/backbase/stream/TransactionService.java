@@ -83,7 +83,7 @@ public class TransactionService {
     public Mono<Void> deleteTransactions(Flux<TransactionsDeleteRequestBody> transactionItemDelete) {
         return transactionItemDelete
             .collectList()
-            .flatMap(transactionPresentationServiceApi::postDelete);
+            .flatMap(item -> transactionPresentationServiceApi.postDelete(item, null));
 
     }
 
@@ -95,6 +95,7 @@ public class TransactionService {
      */
     public Flux<TransactionItem> getTransactions(TransactionsQuery transactionsQuery) {
         return transactionPresentationServiceApi.getTransactions(
+            null, // xTransactionsUserId
             transactionsQuery.getAmountGreaterThan(),
             transactionsQuery.getAmountLessThan(),
             transactionsQuery.getBookingDateGreaterThan(),
@@ -135,7 +136,7 @@ public class TransactionService {
     public Mono<Void> patchTransactions(Flux<TransactionsPatchRequestBody> transactionItems) {
         return transactionItems
             .collectList()
-            .flatMap(transactionPresentationServiceApi::patchTransactions);
+            .flatMap(items -> transactionPresentationServiceApi.patchTransactions(items, null));
     }
 
     /**
@@ -147,7 +148,7 @@ public class TransactionService {
     public Mono<Void> postRefresh(Flux<ArrangementItem> arrangementItems) {
         return arrangementItems
             .collectList()
-            .flatMap(transactionPresentationServiceApi::postRefresh);
+            .flatMap(item -> transactionPresentationServiceApi.postRefresh(item, null));
     }
 
 }

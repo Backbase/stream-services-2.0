@@ -106,7 +106,7 @@ public class ArrangementService {
      * @return Product
      */
     public Mono<AccountArrangementItem> getArrangement(String internalId) {
-        return arrangementsApi.getArrangementById(internalId)
+        return arrangementsApi.getArrangementById(internalId, false)
             .onErrorResume(WebClientResponseException.NotFound.class, ex -> {
                 log.info("Arrangement: {} not found", internalId);
                 return Mono.empty();
@@ -150,7 +150,7 @@ public class ArrangementService {
     public Mono<String> deleteArrangementByInternalId(String arrangementInternalId) {
         log.debug("Retrieving Arrangement by internal id {}", arrangementInternalId);
         // get arrangement externalId by internal id.
-        return arrangementsApi.getArrangementById(arrangementInternalId)
+        return arrangementsApi.getArrangementById(arrangementInternalId, false)
                 .map(AccountArrangementItem::getExternalArrangementId)
                 .onErrorResume(WebClientResponseException.class, e -> {
                     log.warn("Failed to retrieve arrangement by internal id {}, {}", arrangementInternalId, e.getMessage());

@@ -3,6 +3,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2.44.0]
+### Changed
+- Use backbase bom pom instead of banking-service and identity boms
+- Update to 2021.07 release (DBS 2.21.0 and Identity 1.9.0)
+  - Optional parameter (`includeSubscriptions`) added to ArrangementsApi.getArrangementById.
+  - Optional parameter (`xTransactionsUserId`) added to TransactionPresentationServiceApi.postTransactions.
+  - Optional parameter (`xTransactionsUserId`) added to TransactionPresentationServiceApi.getTransactions.
+  - Optional parameter (`xTransactionsUserId`) added to TransactionPresentationServiceApi.patchTransactions.
+  - Optional parameter (`xTransactionsUserId`) added to TransactionPresentationServiceApi.postDelete.
+  - Optional parameter (`xTransactionsUserId`) added to TransactionPresentationServiceApi.postRefresh.
+
 ## [2.43.0]
 ### Fixed
 - bugfix NPE for AccessGroupService.getUpdatePermissions  
